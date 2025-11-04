@@ -78,6 +78,9 @@ compare_all_factors('data/creditcard.csv')
 |----------|----------|
 | ![Expected cost (factor=15)](results/Figure%202025-11-04%20211504.png) | ![Expected cost (factor=20)](results/Figure%202025-11-04%20211645.png) |
 
+**Umbral óptimo:** 0.3871  
+**Coste mínimo:** €24.110  
+**Ahorro vs RandomForest:** **15 %**
 
 ## Paquetes Python
 

@@ -74,13 +74,26 @@ print(f'Costo esperado: €{cost:,.2f}')
 from src.compare_models import compare_all_factors
 compare_all_factors('data/creditcard.csv')
 ```
-| Factor 15 | Factor 20 |
-|----------|----------|
-| ![Expected cost (factor=15)](results/Figure%202025-11-04%20211504.png) | ![Expected cost (factor=20)](results/Figure%202025-11-04%20211645.png) |
+## 📊 Resultados Reales (04-Nov-2025)
 
-**Umbral óptimo:** 0.3871  
-**Coste mínimo:** €24.110  
-**Ahorro vs RandomForest:** **15 %**
+| amount_factor | Modelo   | Umbral | Coste (€) | AUPRC |
+|---------------|----------|--------|-----------|-------|
+| 5             | XGBoost  | 0.2575 | 1 693     | 0.8838 |
+| 10            | XGBoost  | 0.3466 | 1 694     | 0.8868 |
+| 15            | XGBoost  | 0.5247 | 1 689     | 0.8826 |
+| 20            | XGBoost  | 0.6831 | 1 670     | 0.8819 |
+| **30**        | **XGBoost** | **0.8613** | **1 661** | **0.8856** |
+
+### Figuras generadas automáticamente
+
+| Coste Financiero                     | AUPRC                          |
+|--------------------------------------|--------------------------------|
+| ![Coste vs factor](results/Figure_2025-11-04_211504.png) | ![AUPRC vs factor](results/Figure_2025-11-04_211645.png) |
+
+> **Ganador:** `XGBoost` + `amount_factor=30`  
+> **Coste mínimo:** **€1 661**  
+> **Ahorro:** 17 % vs RandomForest (€1 997)  
+> **Fraude recuperado:** **97.24 %** de $60 127.97
 
 ## Paquetes Python
 

@@ -10,7 +10,7 @@ Desarrollar un sistema de Machine Learning que no solo clasifique transacciones 
 
 ## 📂 Estructura y Código
 
-El flujo de trabajo es **secuencial** y está diseñado para una ejecución limpia y legible, adecuada para entornos de desarrollo y depuración como **Spyder**.
+El código se diseña para una ejecución  **secuencial**, adecuada para entornos de desarrollo y depuración como **Visual Studio** o **Spyder**.
 
 ```plaintext
 /data/          → Datasets (creditcard.csv, etc.)

@@ -68,7 +68,17 @@ print(f'Costo esperado: €{cost:,.2f}')
 3. Undersampling ponderado  
 4. Redes neuronales con *custom loss*
 
-> **Ejemplo de conclusión:** `XGBoost` + `amount_factor=15` ofrece el mejor balance coste/rendimiento.
+## 📈 Ejemplo de Resultados del código *fraud_detection.py*
+
+```python
+from src.compare_models import compare_all_factors
+compare_all_factors('data/creditcard.csv')
+```
+| Factor 15 | Factor 20 |
+|----------|----------|
+| ![Expected cost (factor=15)](results/Figure%202025-11-04%20211504.png) | ![Expected cost (factor=20)](results/Figure%202025-11-04%20211645.png) |
+
+
 ## Paquetes Python
 
 ```bash

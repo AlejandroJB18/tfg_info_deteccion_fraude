@@ -61,13 +61,6 @@ print(f'Costo esperado: €{cost:,.2f}')
 
 ---
 
-## Posibles Experimentos a Realizar
-
-1. Variación de `amount_factor` (5, 10, 15, 20)  
-2. Reequilibrado por SMOTE + peso por monto  
-3. Undersampling ponderado  
-4. Redes neuronales con *custom loss*
-
 ## 📈 Ejemplo de Resultados del código *fraud_detection.py*
 
 ```python

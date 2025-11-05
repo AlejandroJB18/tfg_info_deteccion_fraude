@@ -1,10 +1,10 @@
 # tfg_info_deteccion_fraude
-Desarrollar un sistema de Machine Learning que no solo clasifique transacciones como fraudulentas o legítimas, sino que **minimice la pérdida financiera total esperada**. El modelo debe aprender que un fraude de $10,000 es significativamente más costoso que 10 fraudes de $100.
+Desarrollar un sistema de Machine Learning que no solo clasifique transacciones como fraudulentas o legítimas, sino que **minimice la pérdida financiera total esperada**. El modelo debe aprender que un fraude de 10,000€ es significativamente más costoso que 10 fraudes de 100€.
 
 ### Enfoque Técnico
 * **Problema Imbalanceado:** Tratamiento de la baja tasa de fraude (clase minoritaria).
 * **Sensibilidad al Coste:** Incorporación del campo `Amount` (monto) como factor de penalización durante el entrenamiento y la evaluación.
-* **Métrica Clave:** **Costo Financiero Esperado** (Expected Financial Cost), en lugar de F1-Score o Accuracy.
+* **Métrica Clave:** **Costo Financiero Esperado** (Expected Financial Cost), en lugar de F1-Score o Balance Accuracy.
 
 ---
 
@@ -41,7 +41,7 @@ from src.evaluate import expected_cost, best_threshold_by_cost
 cost = expected_cost(y_test, proba, amount_test)
 print(f'Costo esperado: €{cost:,.2f}')
 ```
-
+Dataset Credit Card Fraud Detection de Kaggle [data/creditcard.csv](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
 ## Modelos Comparados
 
 | Modelo         | Ventajas                                  | Desventajas                              |

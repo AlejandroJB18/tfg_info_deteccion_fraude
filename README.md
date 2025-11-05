@@ -88,7 +88,7 @@ compare_all_factors('data/creditcard.csv')
 
 | Coste Financiero                     | AUPRC                          |
 |--------------------------------------|--------------------------------|
-| ![Coste vs factor](results/Figure_2025-11-04_211504.png) | ![AUPRC vs factor](results/Figure_2025-11-04_211645.png) |
+| ![Coste vs factor](results/Figure%202025-11-04%20211504.png) | ![AUPRC vs factor](results/Figure%202025-11-04%20211645.png) |
 
 > **Ganador:** `XGBoost` + `amount_factor=30`  
 > **Coste mínimo:** **€1 661**  

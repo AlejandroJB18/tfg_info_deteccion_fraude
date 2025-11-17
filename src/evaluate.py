@@ -16,12 +16,12 @@ def expected_cost(y_true, y_proba, amounts, threshold=0.5, fraud_loss=0.9, inspe
     cost = (amounts[fn] * fraud_loss).sum() + fp.sum() * inspect_cost
     return cost
 
-def best_threshold_by_cost(y_true, y_proba, amounts, steps=100):
+def best_threshold_by_cost(y_true, y_proba, amounts, steps=100, fraud_loss=0.9, inspect_cost=5):
     """
     Scan 100 thresholds and return the one with lowest cost.
     """
     thresholds = np.linspace(0.01, 0.99, steps)
-    costs = [expected_cost(y_true, y_proba, amounts, t) for t in thresholds]
+    costs = [expected_cost(y_true, y_proba, amounts, t, fraud_loss, inspect_cost) for t in thresholds]    
     best_idx = np.argmin(costs)
     return thresholds[best_idx], costs[best_idx]
 

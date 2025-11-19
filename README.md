@@ -10,36 +10,41 @@ Desarrollar un sistema de Machine Learning que no solo clasifique transacciones 
 
 ## 📂 Estructura y Código
 
-El código se diseña para una ejecución  **secuencial**, adecuada para entornos de desarrollo y depuración como **Visual Studio** o **Spyder**.
+El código se diseña para una ejecución  **secuencial**, adecuada para entornos de desarrollo y depuración como **Visual Studio** o **Spyder**. El código se ha organizado para separar la lógica reutilizable (`src/`) de los experimentos y análisis finales (`notebooks/`).
 
 ```plaintext
-/data/          → Datasets (creditcard.csv, etc.)
-/src/           → Módulos Python
-    ├── load_data.py
-    ├── train_model.py
-    ├── evaluate.py
-    └── compare_models.py
-/notebooks/     → Análisis exploratorio (opcional)
-/results/       → Modelos, métricas y gráficos
+/data/                                  → Datasets (credit_card.csv, cs_training, etc.)
+/exploracion/                           → Notebooks de la fase inicial de investigación
+    ├── deteccion_impago...ipynb      
+    ├── varios_datasets.ipynb     
+    ├── modelos_avanzados.ipynb      
+/notebooks/                             → Análisis finales
+    ├── analisis_financiero.ipynb       # Simulación y optimización del modelo
+    ├── analisis_sensibilidad.ipynb     # Análisis de robustez de negocio
+/results/                               → Modelos, métricas y gráficos
+/src/                                   → Módulos Python
+    ├── load_data.py                    # Carga y limpieza de datos
+    ├── train_model.py                  # Entrenamiento con coste variable
+    ├── evaluate.py                     # Función de Coste Financiero y Optimización de Umbral
+    └── compare_models.py               # Simulaciones
+README.md                               → Este documento
 ```
 ### Ejemplos de código
 
 ```python
-# Cargar datos
+# 1. Cargar datos y separar importes
 from src.load_data import load_fraud_csv
-df, X, y = load_fraud_csv('data/creditcard.csv')
-amount = X['Amount']
-```
-```python
-# Entrenar modelo sensible al coste
-from src.train_model import train_rf_with_cost
-rf = train_rf_with_cost(X_train, y_train, amount_train, amount_factor=15)
-```
-```python
-# Evaluar con coste real
-from src.evaluate import expected_cost, best_threshold_by_cost
-cost = expected_cost(y_test, proba, amount_test)
-print(f'Costo esperado: €{cost:,.2f}')
+df, X, y = load_fraud_csv('data/credit_card.csv')
+
+# 2. Entrenar modelo con penalización variable (Amount * factor)
+from src.train_model import train_xgb_with_cost
+# amount_factor=20 indica que el modelo debe priorizar 20 veces más el importe
+xgb = train_xgb_with_cost(X_train, y_train, amount_train, amount_factor=20)
+
+# 3. Encontrar el umbral que minimiza el coste real
+from src.evaluate import best_threshold_by_cost
+# Coste = (FN * 90% del Importe) + (FP * 5€ inspección)
+best_thr, min_cost = best_threshold_by_cost(y_test, proba, amount_test)
 ```
 Dataset Credit Card Fraud Detection de Kaggle [data/creditcard.csv](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
 ## Modelos Comparados

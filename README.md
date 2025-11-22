@@ -1,5 +1,5 @@
 # tfg_info_deteccion_fraude
-Desarrollar un sistema de Machine Learning que no solo clasifique transacciones como fraudulentas o legítimas, sino que **minimice la pérdida financiera total esperada**. El modelo debe aprender que un fraude de 10,000€ es significativamente más costoso que 10 fraudes de 100€.
+Este proyecto de Trabajo de Fin de Grado (TFG) desarrolla un sistema de Machine Learning que no solo clasifica transacciones como fraudulentas o legítimas, sino que **minimiza la pérdida financiera total esperada** para una entidad bancaria. El modelo debe aprender que un fraude de 10,000€ es significativamente más costoso que 10 fraudes de 100€.
 
 ### Enfoque Técnico
 * **Problema Imbalanceado:** Tratamiento de la baja tasa de fraude (clase minoritaria).
@@ -21,6 +21,7 @@ El código se diseña para una ejecución  **secuencial**, adecuada para entorno
 /notebooks/                             → Análisis finales
     ├── analisis_financiero.ipynb       # Simulación y optimización del modelo
     ├── analisis_sensibilidad.ipynb     # Análisis de robustez de negocio
+/models/                                → Modelos entrenados
 /results/                               → Modelos, métricas y gráficos
 /src/                                   → Módulos Python
     ├── load_data.py                    # Carga y limpieza de datos
@@ -38,7 +39,7 @@ df, X, y = load_fraud_csv('data/credit_card.csv')
 
 # 2. Entrenar modelo con penalización variable (Amount * factor)
 from src.train_model import train_xgb_with_cost
-# amount_factor=20 indica que el modelo debe priorizar 20 veces más el importe
+# amount_factor=20 penaliza 20 veces más los errores en fraudes de alto valor
 xgb = train_xgb_with_cost(X_train, y_train, amount_train, amount_factor=20)
 
 # 3. Encontrar el umbral que minimiza el coste real
@@ -46,7 +47,7 @@ from src.evaluate import best_threshold_by_cost
 # Coste = (FN * 90% del Importe) + (FP * 5€ inspección)
 best_thr, min_cost = best_threshold_by_cost(y_test, proba, amount_test)
 ```
-Dataset Credit Card Fraud Detection de Kaggle [data/creditcard.csv](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
+Dataset Credit Card Fraud Detection de Kaggle [data/credit_card.csv](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
 ## Modelos Comparados
 
 | Modelo         | Ventajas                                  | Desventajas                              |
@@ -76,11 +77,16 @@ compare_all_factors('data/creditcard.csv')
 
 | amount_factor | Modelo   | Umbral | Coste (€) | AUPRC |
 |---------------|----------|--------|-----------|-------|
-| 5             | XGBoost  | 0.2575 | 1 693     | 0.8838 |
-| 10            | XGBoost  | 0.3466 | 1 694     | 0.8868 |
-| 15            | XGBoost  | 0.5247 | 1 689     | 0.8826 |
-| 20            | XGBoost  | 0.6831 | 1 670     | 0.8819 |
-| **30**        | **XGBoost** | **0.8613** | **1 661** | **0.8856** |
+| 2             | XGBoost  | 0.8217 | 1 704     | 0.8861 |
+| 5             | XGBoost  | 0.4951 | 1 683     | 0.8891 |
+| 10            | XGBoost  | 0.1783 | 1 737     | 0.8858 |
+| **20**        | XGBoost  | 0.7821 | 1 660     | 0.8899 |
+| 30            | XGBoost  | 0.8217 | 1 660     | 0.8910 |
+
+El **análisis de sensibilidad** (notebooks/analisis_sensibilidad.ipynb) demostró que el umbral por defecto (0.5) es incorrecto financieramente. El umbral óptimo depende del coste de inspección manual (FP):
+- Si inspeccionar cuesta < 3€: El modelo debe ser agresivo (Umbral bajo ~0.40).
+- Si inspeccionar cuesta ≥ 3€: El modelo debe ser conservador (Umbral alto 0.7821).
+Dado un coste de inspección realista de 5€, la estrategia óptima es conservadora (Umbral 0.78), minimizando las falsas alarmas.
 
 ### Figuras generadas automáticamente
 
@@ -98,3 +104,6 @@ compare_all_factors('data/creditcard.csv')
 ```bash
 pip install pandas scikit-learn xgboost imbalanced-learn matplotlib seaborn
 ```
+- Ejecuta notebooks/analisis_financiero.ipynb para descargar los datos y ver la optimización.
+- Ejecuta notebooks/analisis_sensibilidad.ipynb para ver los mapas de calor de decisión y generar el modelo final en models/.
+

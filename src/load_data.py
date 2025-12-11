@@ -41,3 +41,57 @@ def load_fraud_csv(csv_path):
     X = df.drop('Class', axis=1)
     y = df['Class']
     return df, X, y
+
+
+def load_german_data(filepath='../data/german_credit_data.csv'):
+    """
+    Carga y preprocesa el dataset German Credit para análisis de costes.
+    """
+    import pandas as pd
+    from sklearn.preprocessing import LabelEncoder
+
+    # Cargar dataset (asegúrate de tener el CSV o usar la librería directa)
+    # Si no tienes el csv descargado, usa sklearn o descárgalo de UCI
+    try:
+        df = pd.read_csv(filepath)
+    except:
+        # Fallback: Cargar desde URL si no está local
+        url = "https://raw.githubusercontent.com/stedy/Machine-Learning-with-R-datasets/master/german_credit.csv"
+        df = pd.read_csv(url)
+
+    # 1. Definir Target
+    # En este dataset: 2 = Bad (Impago), 1 = Good (Pagó)
+    # Lo convertimos a: 1 = Impago (Clase Positiva/Fraude), 0 = Pagó
+    # Ajusta según tu CSV, a veces viene como "bad"/"good" texto
+    if 'Cost Matrix(Risk)' in df.columns: # Versión raw a veces varía
+        pass 
+    
+    # Estandarización típica de este dataset
+    # Asumimos que la columna target es 'Risk' o similar. 
+    # Si usas la versión de Kaggle común:
+    if 'Risk' in df.columns:
+        df['target'] = df['Risk'].apply(lambda x: 1 if x == 'bad' else 0)
+        df = df.drop('Risk', axis=1)
+    elif 'class' in df.columns: # Otra versión común
+         df['target'] = df['class'].apply(lambda x: 1 if x == 2 else 0)
+         df = df.drop('class', axis=1)
+
+    # 2. Gestionar Amount
+    # Necesitamos la columna de dinero para tus cálculos financieros
+    if 'Credit amount' in df.columns:
+        df = df.rename(columns={'Credit amount': 'Amount'})
+    elif 'amount' in df.columns:
+        df = df.rename(columns={'amount': 'Amount'})
+        
+    # 3. Codificar variables categóricas (Housing, Purpose, Sex...)
+    # XGBoost necesita números, no strings
+    cat_cols = df.select_dtypes(include=['object']).columns
+    le = LabelEncoder()
+    for col in cat_cols:
+        df[col] = le.fit_transform(df[col])
+
+    X = df.drop(['target'], axis=1)
+    y = df['target']
+    
+    print(f"German Data Cargado: {X.shape}, Tasa de Impago: {y.mean():.2%}")
+    return df, X, y

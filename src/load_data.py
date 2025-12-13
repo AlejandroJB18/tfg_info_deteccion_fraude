@@ -43,55 +43,45 @@ def load_fraud_csv(csv_path):
     return df, X, y
 
 
-def load_german_data(filepath='../data/german_credit_data.csv'):
+def load_credit_scoring_data(filepath='../data/cs-training.csv'):
     """
-    Carga y preprocesa el dataset German Credit para análisis de costes.
+    Carga el dataset 'Give Me Some Credit', trata nulos y genera una columna 'Amount'
+    estimada para el aprendizaje sensible al coste.
     """
     import pandas as pd
-    from sklearn.preprocessing import LabelEncoder
+    import numpy as np
+    from sklearn.impute import SimpleImputer
 
-    # Cargar dataset (asegúrate de tener el CSV o usar la librería directa)
-    # Si no tienes el csv descargado, usa sklearn o descárgalo de UCI
-    try:
-        df = pd.read_csv(filepath)
-    except:
-        # Fallback: Cargar desde URL si no está local
-        url = "https://raw.githubusercontent.com/stedy/Machine-Learning-with-R-datasets/master/german_credit.csv"
-        df = pd.read_csv(url)
-
-    # 1. Definir Target
-    # En este dataset: 2 = Bad (Impago), 1 = Good (Pagó)
-    # Lo convertimos a: 1 = Impago (Clase Positiva/Fraude), 0 = Pagó
-    # Ajusta según tu CSV, a veces viene como "bad"/"good" texto
-    if 'Cost Matrix(Risk)' in df.columns: # Versión raw a veces varía
-        pass 
+    # 1. Cargar datos
+    df = pd.read_csv(filepath)
     
-    # Estandarización típica de este dataset
-    # Asumimos que la columna target es 'Risk' o similar. 
-    # Si usas la versión de Kaggle común:
-    if 'Risk' in df.columns:
-        df['target'] = df['Risk'].apply(lambda x: 1 if x == 'bad' else 0)
-        df = df.drop('Risk', axis=1)
-    elif 'class' in df.columns: # Otra versión común
-         df['target'] = df['class'].apply(lambda x: 1 if x == 2 else 0)
-         df = df.drop('class', axis=1)
+    # El dataset suele tener una columna de índice inútil 'Unnamed: 0'
+    if 'Unnamed: 0' in df.columns:
+        df = df.drop('Unnamed: 0', axis=1)
 
-    # 2. Gestionar Amount
-    # Necesitamos la columna de dinero para tus cálculos financieros
-    if 'Credit amount' in df.columns:
-        df = df.rename(columns={'Credit amount': 'Amount'})
-    elif 'amount' in df.columns:
-        df = df.rename(columns={'amount': 'Amount'})
-        
-    # 3. Codificar variables categóricas (Housing, Purpose, Sex...)
-    # XGBoost necesita números, no strings
-    cat_cols = df.select_dtypes(include=['object']).columns
-    le = LabelEncoder()
-    for col in cat_cols:
-        df[col] = le.fit_transform(df[col])
+    # 2. Tratamiento de Nulos (Crítico para este dataset)
+    # MonthlyIncome y NumberOfDependents suelen tener nulos.
+    # XGBoost los maneja, pero para calcular el 'Amount' necesitamos el Income lleno.
+    df['MonthlyIncome'] = df['MonthlyIncome'].fillna(df['MonthlyIncome'].median())
+    df['NumberOfDependents'] = df['NumberOfDependents'].fillna(0)
 
-    X = df.drop(['target'], axis=1)
-    y = df['target']
+    # 3. Generar columna 'Amount' (Proxy de Exposición al Default)
+    # Asumimos que la línea de crédito es aprox 5 veces el ingreso mensual
+    # Esto es necesario para que funcione tu lógica de 'amount_factor'
+    df['Amount'] = df['MonthlyIncome'] * 5 
     
-    print(f"German Data Cargado: {X.shape}, Tasa de Impago: {y.mean():.2%}")
+    # Evitar montos 0 para no romper logaritmos o pesos (poner un mínimo de 1000)
+    df['Amount'] = df['Amount'].apply(lambda x: max(x, 1000))
+
+    # 4. Separar X e y
+    # Target: SeriousDlqin2yrs (1 = Default, 0 = Paga)
+    target_col = 'SeriousDlqin2yrs'
+    
+    X = df.drop(target_col, axis=1)
+    y = df[target_col]
+
+    print(f"Credit Scoring Data Loaded: {len(df):,} records")
+    print(f"Default Rate: {y.mean():.2%}")
+    print(f"Total Estimated Exposure: ${df['Amount'].sum():,.0f}")
+
     return df, X, y

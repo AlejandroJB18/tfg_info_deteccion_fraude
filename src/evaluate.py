@@ -35,3 +35,38 @@ def print_metrics(y_true, y_proba, amounts, model_name):
     print(f"   Best threshold : {thr:.4f}")
     print(f"   Expected cost  : €{cost:,.0f}")
     print(f"   AUPRC          : {auprc:.4f}")
+
+# ==============================================================================
+# PARTE 2: CREDIT SCORING - EVALUACIÓN DE MODELOS (XGB, LGBM, RF)
+# ==============================================================================
+
+# --- 1. FUNCIÓN DE COSTE BANCARIO ---
+def credit_scoring_cost(y_true, y_proba, amounts, threshold, LGD=0.75, interest_rate=0.15):
+    """
+    Calcula el coste financiero para un banco.
+    
+    Coste Total = (Pérdida por Impago [FN]) + (Coste de Oportunidad [FP])
+    """
+    y_pred = (y_proba >= threshold).astype(int)
+    
+    # FN (Falso Negativo): El modelo aprueba (0) y el cliente no paga (1)
+    # Coste: Perdemos el capital prestado ajustado por la LGD (Loss Given Default)
+    fn_mask = (y_true == 1) & (y_pred == 0)
+    capital_loss = (amounts[fn_mask] * LGD).sum()
+    
+    # FP (Falso Positivo): El modelo rechaza (1) y el cliente hubiera pagado (0)
+    # Coste: Dejamos de ganar los intereses del préstamo
+    fp_mask = (y_true == 0) & (y_pred == 1)
+    opportunity_cost = (amounts[fp_mask] * interest_rate).sum()
+    
+    return capital_loss + opportunity_cost
+
+def best_threshold_credit(y_true, y_proba, amounts, LGD=0.75, interest_rate=0.15):
+    """Encuentra el umbral que minimiza el coste financiero bancario."""
+    thresholds = np.linspace(0.01, 0.99, 100)
+    costs = [
+        credit_scoring_cost(y_true, y_proba, amounts, t, LGD, interest_rate) 
+        for t in thresholds
+    ]
+    best_idx = np.argmin(costs)
+    return thresholds[best_idx], costs[best_idx]

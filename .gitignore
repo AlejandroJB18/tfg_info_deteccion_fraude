@@ -208,3 +208,5 @@ __marimo__/
 
 data/credit_card.csv
 data/cs-training.csv
+models/credit_scoring_final_model.pkl
+model/fraud_detection_xgboost_final.pkl

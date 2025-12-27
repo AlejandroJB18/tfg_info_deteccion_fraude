@@ -41,7 +41,7 @@ def print_metrics(y_true, y_proba, amounts, model_name):
 # ==============================================================================
 
 # --- 1. FUNCIÓN DE COSTE BANCARIO ---
-def credit_scoring_cost(y_true, y_proba, amounts, threshold, LGD=0.75, interest_rate=0.15):
+def credit_scoring_cost(y_true, y_proba, amounts, threshold =0.5, LGD=0.8, interest_rate=0.15):
     """
     Calcula el coste financiero para un banco.
     
@@ -61,7 +61,7 @@ def credit_scoring_cost(y_true, y_proba, amounts, threshold, LGD=0.75, interest_
     
     return capital_loss + opportunity_cost
 
-def best_threshold_credit(y_true, y_proba, amounts, LGD=0.75, interest_rate=0.15):
+def best_threshold_credit(y_true, y_proba, amounts, LGD=0.8, interest_rate=0.15):
     """Encuentra el umbral que minimiza el coste financiero bancario."""
     thresholds = np.linspace(0.01, 0.99, 100)
     costs = [

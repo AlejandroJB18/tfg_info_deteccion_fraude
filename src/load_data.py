@@ -66,9 +66,9 @@ def load_credit_scoring_data(filepath='../data/cs-training.csv'):
     df['NumberOfDependents'] = df['NumberOfDependents'].fillna(0)
 
     # 3. Generar columna 'Amount' (Proxy de Exposición al Default)
-    # Asumimos que la línea de crédito es aprox 5 veces el ingreso mensual
+    # Asumimos que la línea de crédito es aprox 12 veces el ingreso mensual
     # Esto es necesario para que funcione tu lógica de 'amount_factor'
-    df['Amount'] = df['MonthlyIncome'] * 5 
+    df['Amount'] = df['MonthlyIncome'] * 6 
     
     # Evitar montos 0 para no romper logaritmos o pesos (poner un mínimo de 1000)
     df['Amount'] = df['Amount'].apply(lambda x: max(x, 1000))

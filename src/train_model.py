@@ -26,9 +26,25 @@ def train_model_with_cost(X_train, y_train, amount_train, model_type='xgb', amou
     # 1. Lógica común: Calcular pesos basados en el monto
     weights = np.ones(len(y_train))
     fraud = y_train == 1
-    weights[fraud] = amount_train[fraud] * amount_factor
 
-    # 2. Configuración de parámetros por defecto para cada modelo
+    # 2. CALCULO ROBUSTO DE PESOS
+    if np.sum(fraud) > 0:
+        fraud_amounts = amount_train[fraud]
+        avg_fraud_amount = fraud_amounts.mean()
+        
+        # Evitamos división por cero por si acaso
+        if avg_fraud_amount == 0: 
+            avg_fraud_amount = 1.0
+            
+        # Normalizamos: Cuántas veces es este fraude respecto al promedio
+        # Ej: Si promedio es 1000 y fraude es 5000 -> ratio es 5.
+        amount_ratio = fraud_amounts / avg_fraud_amount
+        
+        # Aplicamos el factor sobre el ratio normalizado
+        # Si factor es 10, el peso será 5 * 10 = 50. (Manejable para XGBoost)
+        weights[fraud] = amount_ratio * amount_factor
+
+    # 3. Configuración de parámetros por defecto para cada modelo
     # Estos son los valores que tenías en tus funciones originales
     rf_defaults = {
         'n_estimators': 200,
@@ -57,7 +73,7 @@ def train_model_with_cost(X_train, y_train, amount_train, model_type='xgb', amou
         'verbose': -1
     }
 
-    # 3. Selección e instanciación del modelo fusionando defaults con kwargs
+    # 4. Selección e instanciación del modelo fusionando defaults con kwargs
     if model_type == 'rf':
         params = rf_defaults.copy()
         params.update(kwargs) # Sobrescribe defaults con lo que venga de fuera (ej. del GridSearch)
@@ -76,70 +92,9 @@ def train_model_with_cost(X_train, y_train, amount_train, model_type='xgb', amou
     else:
         raise ValueError(f"Modelo '{model_type}' no soportado. Usa 'rf', 'xgb' o 'lgbm'.")
 
-    # 4. Lógica común: Entrenamiento
+    # 5. Lógica común: Entrenamiento
     model.fit(X_train, y_train, sample_weight=weights)
     print(f"Model {model_type.upper()} trained (factor={amount_factor})")
     
     return model
 
-def optimize_params(X_train, y_train, model_type='xgb', n_iter=10, cv=3):
-    """
-    Realiza una búsqueda aleatoria (RandomizedSearchCV) para encontrar 
-    los mejores hiperparámetros estructurales del modelo.
-    
-    Nota: Optimizamos para AUPRC (Average Precision) que es robusto para desbalanceo.
-    """
-    print(f"--- Optimizando hiperparámetros para {model_type} ---")
-    
-    # Espacios de búsqueda
-    param_grids = {
-        'rf': {
-            'n_estimators': [50, 100, 150, 200, 250, 300],
-            'max_depth': [None, 2, 5, 10, 15, 20, 50],
-            'min_samples_leaf': [11, 2, 3, 4, 5, 10, 20],
-            'class_weight': ['balanced', 'balanced_subsample']
-        },
-        'xgb': {
-            'n_estimators': [50, 100, 150, 200, 250, 300],
-            'max_depth': [2, 3, 5, 7, 10, 15, 20],
-            'learning_rate': [0.01, 0.1, 0.2, 0.3, 0.5, 0.7, 1],
-        },
-        'lgbm': {
-            'n_estimators': [50, 100, 150, 200, 250, 300],
-            'max_depth': [-1, 2, 5, 7, 10, 20],
-            'learning_rate': [0.01, 0.1, 0.2, 0.3, 0.5, 0.7, 1],
-            'num_leaves': [10, 20, 30, 50, 75, 100],
-        }
-    }
-    
-    if model_type not in param_grids:
-        print("Modelo no configurado para optimización.")
-        return {}
-
-    # Instanciamos el modelo base
-    if model_type == 'rf':
-        clf = RandomForestClassifier(random_state=42, n_jobs=-1)
-    elif model_type == 'xgb':
-        clf = XGBClassifier(random_state=42, n_jobs=-1, eval_metric='logloss')
-    elif model_type == 'lgbm':
-        clf = LGBMClassifier(random_state=42, n_jobs=-1, verbose=-1)
-
-    # Configurar RandomizedSearchCV
-    # Usamos AUPRC (average_precision) porque es mejor para fraude que F1 o Accuracy
-    search = RandomizedSearchCV(
-        estimator=clf,
-        param_distributions=param_grids[model_type],
-        n_iter=n_iter,
-        scoring='average_precision', 
-        cv=StratifiedKFold(n_splits=cv),
-        verbose=1,
-        random_state=42,
-        n_jobs=-1
-    )
-    
-    search.fit(X_train, y_train)
-    
-    print(f"Mejores params ({model_type}): {search.best_params_}")
-    print(f"Mejor Score (AUPRC): {search.best_score_:.4f}")
-    
-    return search.best_params_

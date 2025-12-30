@@ -13,22 +13,24 @@ Este proyecto de Trabajo de Fin de Grado (TFG) desarrolla un sistema de Machine 
 El código se diseña para una ejecución  **secuencial**, adecuada para entornos de desarrollo y depuración como **Visual Studio** o **Spyder**. El código se ha organizado para separar la lógica reutilizable (`src/`) de los experimentos y análisis finales (`notebooks/`).
 
 ```plaintext
-/data/                                  → Datasets (credit_card.csv, cs_training, etc.)
-/exploracion/                           → Notebooks de la fase inicial de investigación
-    ├── deteccion_impago...ipynb      
-    ├── varios_datasets.ipynb     
-    ├── modelos_avanzados.ipynb      
-/notebooks/                             → Análisis finales
-    ├── analisis_financiero.ipynb       # Simulación y optimización del modelo
-    ├── analisis_sensibilidad.ipynb     # Análisis de robustez de negocio
-/models/                                → Modelos entrenados
-/results/                               → Modelos, métricas y gráficos
-/src/                                   → Módulos Python
-    ├── load_data.py                    # Carga y limpieza de datos
-    ├── train_model.py                  # Entrenamiento con coste variable
-    ├── evaluate.py                     # Función de Coste Financiero y Optimización de Umbral
-    └── compare_models.py               # Simulaciones
-README.md                               → Este documento
+/data/                                          → Datasets (credit_card.csv, cs_training, etc.)
+/exploracion/                                   → Notebooks de la fase inicial de investigación
+    ├── modelos_convencionales_german...ipynb      
+    ├── modelos_convencionales_varios....ipynb     
+    └── modelos_avanzados.ipynb      
+/notebooks/                                     → Análisis finales
+    ├── analisis_financiero.ipynb               # Simulación y optimización del modelo
+    ├── analisis_sensibilidad.ipynb             # Análisis de robustez de negocio
+    └── analisis_xai.ipynb                      # Análisis de la explicabilidad del modelo
+/models/                                        → Modelos entrenados
+/results/                                       → Modelos, métricas y gráficos
+/src/                                           → Módulos Python
+    ├── load_data.py                            # Carga y limpieza de datos
+    ├── train_model.py                          # Entrenamiento con coste variable
+    ├── evaluate.py                             # Función de Coste Financiero y Optimización de Umbral
+    ├── compare_models.py                       # Simulaciones
+    └── benchmark_utils.py                      # Funciones de entrenamiento de benchmarks para modelos
+README.md                                       → Este documento
 ```
 ### Ejemplos de código
 

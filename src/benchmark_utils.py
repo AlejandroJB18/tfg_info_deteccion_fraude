@@ -172,9 +172,15 @@ def evaluate_smote_models(X, y, models, dataset_name):
         
         pipeline_smote.fit(X_train, y_train)
         y_pred = pipeline_smote.predict(X_test)
+
+        print("Matriz de Confusión:")
+        print(confusion_matrix(y_test, y_pred))
         
         bal_acc = balanced_accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred, pos_label=1, zero_division=0)
+
+        print(f"Balanced Accuracy: {bal_acc:.3f}")
+        print(f"F1-Score (clase 'mala'): {f1:.3f}")
 
         results_list.append({
             'dataset': dataset_name,
